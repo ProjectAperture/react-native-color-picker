@@ -1,5 +1,5 @@
 import React from 'react'
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import { TouchableOpacity, Slider, View, Image, StyleSheet, InteractionManager, I18nManager } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { createPanResponder } from './utils'
@@ -26,6 +26,7 @@ export class HoloColorPicker extends React.PureComponent {
     this._onSValueChange = this._onSValueChange.bind(this)
     this._onVValueChange = this._onVValueChange.bind(this)
     this._onColorSelected = this._onColorSelected.bind(this)
+    this._onColorChangeFinished= this._onColorChangeFinished.bind(this)
     this._onOldColorSelected = this._onOldColorSelected.bind(this)
     this._isRTL = I18nManager.isRTL
   }
@@ -64,6 +65,14 @@ export class HoloColorPicker extends React.PureComponent {
     this.setState({ color })
     if (this.props.onColorChange) {
       this.props.onColorChange(color)
+    }
+  }
+
+  _onColorChangeFinished() {
+    if (this.props.onColorChangeFinished) {
+      const color = tinycolor(this._getColor()).toHexString()
+      this.props.onColorChangeFinished(color)
+      console.log(this.state.color)
     }
   }
 
@@ -117,6 +126,7 @@ export class HoloColorPicker extends React.PureComponent {
     this._pickerResponder = createPanResponder({
       onStart: handleColorChange,
       onMove: handleColorChange,
+      onEnd: this._onColorChangeFinished,
     })
   }
 
@@ -167,13 +177,13 @@ export class HoloColorPicker extends React.PureComponent {
               activeOpacity={0.7}
             />
             }
-            {!oldColor &&
+            {/* {!oldColor &&
             <TouchableOpacity
               style={[styles.selectedFullPreview, computed.selectedFullPreview]}
               onPress={this._onColorSelected}
               activeOpacity={0.7}
             />
-            }
+            } */}
           </View>
           }
         </View>
@@ -200,6 +210,7 @@ HoloColorPicker.propTypes = {
   onColorSelected: PropTypes.func,
   onOldColorSelected: PropTypes.func,
   hideSliders: PropTypes.bool,
+  onColorChangeFinished: PropTypes.func,
 }
 
 const makeComputedStyles = ({
@@ -211,14 +222,15 @@ const makeComputedStyles = ({
   isRTL,
 }) => {
   const summarySize = 0.5 * pickerSize
-  const indicatorPickerRatio = 42 / 510 // computed from picker image
+  const indicatorPickerRatio = 60 / 465 // computed from picker image
   const indicatorSize = indicatorPickerRatio * pickerSize
   const pickerPadding = indicatorSize / 3
   const indicatorRadius = pickerSize / 2 - indicatorSize / 2 - pickerPadding
   const mx = pickerSize / 2
   const my = pickerSize / 2
-  const dx = Math.cos(angle) * indicatorRadius
-  const dy = Math.sin(angle) * indicatorRadius
+  const dx = Math.cos(angle) * (indicatorRadius + 3)
+  const dy = Math.sin(angle) * (indicatorRadius + 3)
+
   return {
     picker: {
       padding: pickerPadding,
@@ -227,7 +239,7 @@ const makeComputedStyles = ({
     },
     pickerIndicator: {
       top: mx + dx - indicatorSize / 2,
-      [isRTL ? 'right' : 'left']: my + dy - indicatorSize / 2,
+      [isRTL ? 'right' : 'left']: (my + dy - indicatorSize / 2),
       width: indicatorSize,
       height: indicatorSize,
       borderRadius: indicatorSize / 2,
